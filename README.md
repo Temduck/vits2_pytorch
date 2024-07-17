@@ -101,6 +101,9 @@ python train.py -c configs/vits2_ljs_base.json -m ljs_base # with sdp;
 # VCTK
 python train_ms.py -c configs/vits2_vctk_base.json -m vctk_base
 
+# ISSAI TTS 
+python train_ms.py -c configs/vits2_issai_base.json -m issai_base 
+
 # for onnx export of trained models
 python export_onnx.py --model-path="G_64000.pth" --config-path="config.json" --output="vits2.onnx"
 python infer_onnx.py --model="vits2.onnx" --config-path="config.json" --output-wav-path="output.wav" --text="hello world, how are you?"
