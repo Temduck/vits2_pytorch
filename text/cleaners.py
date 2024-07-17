@@ -16,7 +16,9 @@ import re
 from unidecode import unidecode
 from phonemizer import phonemize
 from phonemizer.backend import EspeakBackend
+import nums_normalizer
 backend = EspeakBackend("en-us", preserve_punctuation=True, with_stress=True)
+backend_kz = EspeakBackend("kk", preserve_punctuation=True, with_stress=True)
 
 
 # Regular expression matching whitespace:
@@ -47,6 +49,27 @@ _abbreviations = [
     ]
 ]
 
+_numerals = [
+    (re.compile(x[0]), x[1])
+    for x in [
+        (r'\b(3[01]|[12][0-9]|[1-9])\s(қаңтар|ақпан|наурыз|сәуір|мамыр|маусым|шілде|тамыз|қыркүйек|қазан|қараша|желтоқсан)', '_replace_nums_pair_word'), # nums pair kazakh month
+        (r'\b\d{4}\s(жыл)', '_replace_nums_pair_word'), # nums pair kazakh year        
+        (r'\b\d{1,3}\b', '_replace_nums'), # hundreds 
+        (r'[а-яА-ЯӘәҒғҚқҢңӨөҰұҮүҺһІі]+\d+', '_remove_nums'), # kazakh word with digit
+        (r'\d+[а-яА-ЯӘәҒғҚқҢңӨөҰұҮүҺһІі]+', '_remove_nums'), # digit with kazakh word 
+        (r'\d+-[інші|ыншы|сыншы|ші|шы]', '_replace_ordinal_nums'),  # ordianal numerals with suffix 
+        (r'\d+-(ден|тан|тен)', '_replace_group_nums') # group numerals with suffix 
+    ]
+]
+
+_issaitts_trash = [
+    ((re.compile("%s" % x[0], re.IGNORECASE), x[1]))
+    for x in [
+        ('–|—|−|－', '-'),
+        ("\n|noise|ʨ|ɕ|»|–|«|—|̆|“|”|…|−|－|●", '')
+    ]
+]
+
 
 def expand_abbreviations(text):
     for regex, replacement in _abbreviations:
@@ -55,7 +78,16 @@ def expand_abbreviations(text):
 
 
 def expand_numbers(text):
-    return normalize_numbers(text)
+    for regex, replacement_func_name in _numerals:
+        replacement_func = getattr(nums_normalizer, replacement_func_name)
+        text = regex.sub(replacement_func, text)
+    return text
+
+
+def remove_trash(text, trash=_issaitts_trash):
+    for regex, replacement in trash:
+        text = re.sub(regex, replacement, text)
+    return text
 
 
 def lowercase(text):
@@ -118,5 +150,15 @@ def english_cleaners3(text):
     text = lowercase(text)
     text = expand_abbreviations(text)
     phonemes = backend.phonemize([text], strip=True)[0]
+    phonemes = collapse_whitespace(phonemes)
+    return phonemes
+
+
+def kazakh_cleaners_issaitts(text):
+    """Pipeline for Kazakh tts speakers datasets text, including num2words, + punctuation + g2p"""
+    text = lowercase(text)
+    text = expand_numbers(text)
+    text = remove_trash(text, _issaitts_trash)
+    phonemes = backend_kz.phonemize([text], strip=True)[0]
     phonemes = collapse_whitespace(phonemes)
     return phonemes
