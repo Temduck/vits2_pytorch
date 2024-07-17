@@ -30,6 +30,7 @@ from models import (
 from losses import generator_loss, discriminator_loss, feature_loss, kl_loss
 from mel_processing import mel_spectrogram_torch, spec_to_mel_torch
 from text.symbols import symbols
+from clearml import Task
 
 
 torch.backends.cudnn.benchmark = True
@@ -58,6 +59,7 @@ def main():
 def run(rank, n_gpus, hps):
     global global_step
     if rank == 0:
+        task = Task.init(project_name='vits2', task_name='PyTorch with TensorBoard')
         logger = utils.get_logger(hps.model_dir)
         logger.info(hps)
         utils.check_git_hash(hps.model_dir)
