@@ -28,6 +28,7 @@ from models import (AVAILABLE_DURATION_DISCRIMINATOR_TYPES,
                     DurationDiscriminatorV1, DurationDiscriminatorV2,
                     MultiPeriodDiscriminator, SynthesizerTrn)
 from text.symbols import symbols
+from clearml import Task
 
 torch.backends.cudnn.benchmark = True
 global_step = 0
@@ -56,6 +57,7 @@ def run(rank, n_gpus, hps):
     net_dur_disc = None
     global global_step
     if rank == 0:
+        task = Task.init(project_name='vits2', task_name='PyTorch with TensorBoard')
         logger = utils.get_logger(hps.model_dir)
         logger.info(hps)
         utils.check_git_hash(hps.model_dir)
