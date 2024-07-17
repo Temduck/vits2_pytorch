@@ -16,7 +16,7 @@ import re
 from unidecode import unidecode
 from phonemizer import phonemize
 from phonemizer.backend import EspeakBackend
-import nums_normalizer
+from . import nums_normalizer
 backend = EspeakBackend("en-us", preserve_punctuation=True, with_stress=True)
 backend_kz = EspeakBackend("kk", preserve_punctuation=True, with_stress=True)
 

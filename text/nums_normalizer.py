@@ -1,5 +1,5 @@
 import re
-from kazakh_text_utils import kazakh_numerals_ordinal_mapping
+from .kazakh_text_utils import kazakh_numerals_ordinal_mapping
 from num2words import num2words
 
 
